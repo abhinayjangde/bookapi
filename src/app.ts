@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import globalErrorHandler from "./middlewares/errorHandler.middleware.js";
+import userRoutes from "./routes/user.route.js";
 
 const app = express();
 
@@ -17,7 +18,10 @@ app.get("/health", (req, res) => {
     });
 });
 
+// user routes
+app.use("/api/users", userRoutes);
+
 // global error handler
-app.use(globalErrorHandler)
+app.use(globalErrorHandler);
 
 export default app;
