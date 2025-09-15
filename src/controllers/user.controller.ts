@@ -1,6 +1,9 @@
+import jwt from "jsonwebtoken";
 import type { Request, Response, NextFunction } from "express";
 import createHttpError from "http-errors";
 import UserModel from "../models/user.model.js";
+import { config } from "../config/config.js";
+
 
 export const registerUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -24,8 +27,13 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
         // 4. Create a new user
         const newUser = await UserModel.create({ name, email, password });
 
-        res.status(201).json({ message: "User registered successfully.", user: newUser._id });
+        // 5. Token
+        const token = jwt.sign({ id: newUser._id }, config.jwtSecret as string,
+            { expiresIn: "7d", algorithm: "HS256" });
+
+        res.status(201).json({ message: "User registered successfully.", accessToken: token });
+
     } catch (error) {
-        next(error);
+        next(createHttpError(500, error as Error));
     }
 };
