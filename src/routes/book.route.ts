@@ -6,7 +6,7 @@ import { createBook } from "../controllers/book.controller.js";
 const router = express.Router();
 
 const upload = multer({
-    dest: path.resolve() + "\\public\\data\\uploads",
+    dest: path.resolve() + "\\public\\uploads",
     limits: { fileSize: 10 * 1024 * 1024 }, // 10MB (1e7 bytes)
 });
 

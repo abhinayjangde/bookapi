@@ -3,6 +3,7 @@ import cloudinary from "../config/cloudinary.js";
 import path from "node:path";
 import createHttpError from "http-errors";
 import BookModel from "../models/book.model.js";
+import fs from "node:fs";
 
 export const createBook = async (
     req: Request,
@@ -25,7 +26,6 @@ export const createBook = async (
         const filePath = path.join(
             process.cwd(),
             "public",
-            "data",
             "uploads",
             fileName,
         );
@@ -42,7 +42,7 @@ export const createBook = async (
             return next(createHttpError(400, "Book file is required."));
         }
 
-        const bookFilePath = path.join(process.cwd(), "public", "data", "uploads", bookFile.filename);
+        const bookFilePath = path.join(process.cwd(), "public", "uploads", bookFile.filename);
         const uploadBookResult = await cloudinary.uploader.upload(bookFilePath, {
             resource_type: "raw",// for non image files like pdf, docx
             filename_override: bookFile.filename,
@@ -65,6 +65,10 @@ export const createBook = async (
             coverImage: uploadCoverResult.secure_url,
             file: uploadBookResult.secure_url,
         })
+
+        // delete the files from local uploads folder
+        fs.promises.unlink(filePath).catch((err) => console.error(err));
+        fs.promises.unlink(bookFilePath).catch((err) => console.error(err));
 
         return res.status(201).json({ message: "Book created successfully", book: newBook });
     } catch (error) {
