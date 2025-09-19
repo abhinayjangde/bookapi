@@ -37,3 +37,49 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
         next(createHttpError(500, error as Error));
     }
 };
+
+export const loginUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        // 1. Extract user data from req.body
+        const { email, password } = req.body;
+
+        // 2. Validate the data
+        if (!email || !password) {
+            const error = createHttpError(400, "All fields are required.");
+            return next(error);
+        }
+
+        // 3. Check if user exists
+        const user = await UserModel.findOne({ email });
+
+        if (!user) {
+            const error = createHttpError(401, "Invalid email or password.");
+            return next(error);
+        }
+
+        // 4. Check password
+        const isPasswordValid = await user.comparePassword(password);
+        if (!isPasswordValid) {
+            const error = createHttpError(401, "Invalid email or password.");
+            return next(error);
+        }
+
+        // 5. Token
+        const token = jwt.sign({ id: user._id }, config.jwtSecret as string,
+            { expiresIn: "7d", algorithm: "HS256" });
+
+        // 6. Set Cookie
+        res.cookie("accessToken", token,
+            {
+                httpOnly: true,
+                secure: config.env === "production",
+                maxAge: 7 * 24 * 60 * 60 * 1000,// 7 days
+            }
+        );
+
+        res.status(200).json({ message: "User logged in successfully.", accessToken: token });
+
+    } catch (error) {
+        next(createHttpError(500, error as Error));
+    }
+};
