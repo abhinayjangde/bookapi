@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import globalErrorHandler from "./middlewares/errorHandler.middleware.js";
 import userRoutes from "./routes/user.route.js";
+import bookRoutes from "./routes/book.route.js";
 
 const app = express();
 
@@ -20,6 +21,8 @@ app.get("/health", (req, res) => {
 
 // user routes
 app.use("/api/users", userRoutes);
+// book routes
+app.use("/api/books", bookRoutes);
 
 // global error handler
 app.use(globalErrorHandler);
