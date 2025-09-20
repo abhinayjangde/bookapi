@@ -1,7 +1,7 @@
 import express from "express";
 import multer from "multer";
 import path from "node:path";
-import { createBook } from "../controllers/book.controller.js";
+import { createBook, updateBook } from "../controllers/book.controller.js";
 import { authenticate } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
@@ -15,5 +15,10 @@ router.post("/add", authenticate, upload.fields([
     { name: "coverImage", maxCount: 1 },
     { name: "file", maxCount: 1 }
 ]), createBook);
+
+router.patch("/:bookId", authenticate, upload.fields([
+    { name: "coverImage", maxCount: 1 },
+    { name: "file", maxCount: 1 }
+]), updateBook);
 
 export default router;
