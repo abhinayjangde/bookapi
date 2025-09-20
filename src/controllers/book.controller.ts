@@ -1,12 +1,13 @@
-import type { NextFunction, Request, Response } from "express";
+import type { NextFunction, Response } from "express";
 import cloudinary from "../config/cloudinary.js";
 import path from "node:path";
 import createHttpError from "http-errors";
 import BookModel from "../models/book.model.js";
 import fs from "node:fs";
+import { AuthRequest } from "../middlewares/auth.middleware.js";
 
 export const createBook = async (
-    req: Request,
+    req: AuthRequest,
     res: Response,
     next: NextFunction,
 ) => {
@@ -21,8 +22,10 @@ export const createBook = async (
         if (!coverImage) {
             return next(createHttpError(400, "Cover image is required."));
         }
+
         const coverImageMimeType = coverImage.mimetype.split("/")[1] ?? "jpg";
         const fileName = coverImage.filename;
+
         const filePath = path.join(
             process.cwd(),
             "public",
@@ -58,10 +61,11 @@ export const createBook = async (
         if (!genre) {
             return next(createHttpError(400, "Genre is required."));
         }
+
         const newBook = await BookModel.create({
             title,
             genre,
-            author: "68c7a7d89e458574717d2469",
+            author: req.userId,
             coverImage: uploadCoverResult.secure_url,
             file: uploadBookResult.secure_url,
         })
