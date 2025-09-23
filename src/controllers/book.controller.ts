@@ -1,4 +1,4 @@
-import type { NextFunction, Response } from "express";
+import type { NextFunction, Response, Request } from "express";
 import cloudinary from "../config/cloudinary.js";
 import path from "node:path";
 import createHttpError from "http-errors";
@@ -170,3 +170,19 @@ export const updateBook = async (
         return next(createHttpError(500, "Error while updating book."));
     }
 };
+
+export const getAllBooks = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        // normally we would add pagination here
+        const books = await BookModel.find();
+        return res.status(200).json({ message: "Books fetched successfully", books });
+    } catch (error) {
+        console.error(error);
+        return next(createHttpError(500, "Error while fetching books."));
+    }
+};
+
