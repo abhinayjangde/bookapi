@@ -3,10 +3,16 @@ import cors from "cors";
 import globalErrorHandler from "./middlewares/errorHandler.middleware.js";
 import userRoutes from "./routes/user.route.js";
 import bookRoutes from "./routes/book.route.js";
+import { config } from "./config/config.js";
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+    origin: config.frontendUrl,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

@@ -12,6 +12,7 @@ const _config = {
         apiKey: process.env.CLOUDINARY_API_KEY,
         apiSecret: process.env.CLOUDINARY_API_SECRET,
     },
+    frontendUrl: process.env.FRONTEND_URL || "http://localhost:3000",
 }
 
 export const config = Object.freeze(_config);
