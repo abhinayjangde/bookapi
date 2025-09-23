@@ -109,7 +109,9 @@ export const updateBook = async (
 
     // only author of the book can update the book
     if (existingBook.author?.toString() !== req.userId) {
-        return next(createHttpError(403, "You are not authorized to update this book."));
+        return next(
+            createHttpError(403, "You are not authorized to update this book."),
+        );
     }
 
     try {
@@ -136,12 +138,10 @@ export const updateBook = async (
             fs.promises.unlink(filePath).catch((err) => console.error(err));
         }
 
-
         // upload file to cloudinary
         const bookFile = files.file?.[0];
 
         if (bookFile) {
-
             const bookFilePath = path.join(
                 process.cwd(),
                 "public",
@@ -154,17 +154,18 @@ export const updateBook = async (
                 folder: "bookpdf-files",
                 format: "pdf",
             });
-            existingBook.file = uploadBookResult.secure_url
+            existingBook.file = uploadBookResult.secure_url;
 
             fs.promises.unlink(bookFilePath).catch((err) => console.error(err));
         }
-
 
         existingBook.title = title;
         existingBook.genre = genre;
         await existingBook.save();
 
-        return res.status(200).json({ message: "Book updated successfully", book: existingBook });
+        return res
+            .status(200)
+            .json({ message: "Book updated successfully", book: existingBook });
     } catch (error) {
         console.log(error);
         return next(createHttpError(500, "Error while updating book."));
@@ -179,10 +180,34 @@ export const getAllBooks = async (
     try {
         // normally we would add pagination here
         const books = await BookModel.find();
-        return res.status(200).json({ message: "Books fetched successfully", books });
+        return res
+            .status(200)
+            .json({ message: "Books fetched successfully", books });
     } catch (error) {
         console.error(error);
         return next(createHttpError(500, "Error while fetching books."));
     }
 };
+
+export const getBookById = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    const { bookId } = req.params;
+    if (!bookId) {
+        return next(createHttpError(400, "Book ID is required."));
+    }
+    try {
+        const book = await BookModel.findById(bookId);
+        if (!book) {
+            return next(createHttpError(404, "Book not found."));
+        }
+        return res.status(200).json({ message: "Book fetched successfully", book });
+    } catch (error) {
+        console.error(error);
+        return next(createHttpError(500, "Error while fetching the book."));
+    }
+};
+
 

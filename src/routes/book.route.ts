@@ -1,7 +1,7 @@
 import express from "express";
 import multer from "multer";
 import path from "node:path";
-import { createBook, updateBook, getAllBooks } from "../controllers/book.controller.js";
+import { createBook, updateBook, getAllBooks, getBookById } from "../controllers/book.controller.js";
 import { authenticate } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
@@ -22,5 +22,6 @@ router.patch("/:bookId", authenticate, upload.fields([
 ]), updateBook);
 
 router.get("/", getAllBooks);
+router.get("/:bookId", getBookById);
 
 export default router;
