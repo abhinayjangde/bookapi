@@ -120,52 +120,51 @@ export const updateBook = async (
 
         const coverImage = files?.coverImage?.[0];
 
-        if (!coverImage) {
-            return next(createHttpError(400, "Cover image is required."));
+        if (coverImage) {
+            const coverImageMimeType = coverImage.mimetype.split("/")[1] ?? "jpg";
+            const fileName = coverImage.filename;
+
+            const filePath = path.join(process.cwd(), "public", "uploads", fileName);
+
+            const uploadCoverResult = await cloudinary.uploader.upload(filePath, {
+                filename_override: fileName,
+                folder: "book-covers",
+                format: coverImageMimeType,
+            });
+            existingBook.coverImage = uploadCoverResult.secure_url;
+
+            fs.promises.unlink(filePath).catch((err) => console.error(err));
         }
 
-        const coverImageMimeType = coverImage.mimetype.split("/")[1] ?? "jpg";
-        const fileName = coverImage.filename;
-
-        const filePath = path.join(process.cwd(), "public", "uploads", fileName);
-
-        const uploadCoverResult = await cloudinary.uploader.upload(filePath, {
-            filename_override: fileName,
-            folder: "book-covers",
-            format: coverImageMimeType,
-        });
 
         // upload file to cloudinary
         const bookFile = files.file?.[0];
-        if (!bookFile) {
-            return next(createHttpError(400, "Book file is required."));
+
+        if (bookFile) {
+
+            const bookFilePath = path.join(
+                process.cwd(),
+                "public",
+                "uploads",
+                bookFile.filename,
+            );
+            const uploadBookResult = await cloudinary.uploader.upload(bookFilePath, {
+                resource_type: "raw", // for non image files like pdf, docx
+                filename_override: bookFile.filename,
+                folder: "bookpdf-files",
+                format: "pdf",
+            });
+            existingBook.file = uploadBookResult.secure_url
+
+            fs.promises.unlink(bookFilePath).catch((err) => console.error(err));
         }
 
-        const bookFilePath = path.join(
-            process.cwd(),
-            "public",
-            "uploads",
-            bookFile.filename,
-        );
-        const uploadBookResult = await cloudinary.uploader.upload(bookFilePath, {
-            resource_type: "raw", // for non image files like pdf, docx
-            filename_override: bookFile.filename,
-            folder: "bookpdf-files",
-            format: "pdf",
-        });
 
         existingBook.title = title;
         existingBook.genre = genre;
-        existingBook.coverImage = uploadCoverResult.secure_url;
-        existingBook.file = uploadBookResult.secure_url
-
         await existingBook.save();
 
-        // delete the files from local uploads folder
-        fs.promises.unlink(filePath).catch((err) => console.error(err));
-        fs.promises.unlink(bookFilePath).catch((err) => console.error(err));
-
-        return res.status(200).json({ message: "Update book endpoint", book: existingBook });
+        return res.status(200).json({ message: "Book updated successfully", book: existingBook });
     } catch (error) {
         console.log(error);
         return next(createHttpError(500, "Error while updating book."));
