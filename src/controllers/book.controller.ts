@@ -210,4 +210,43 @@ export const getBookById = async (
     }
 };
 
+export const deleteById = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction,
+) => {
+    const { bookId } = req.params;
+    if (!bookId) {
+        return next(createHttpError(400, "Book ID is required."));
+    }
+
+    try {
+        const book = await BookModel.findById(bookId);
+        if (!book) {
+            return next(createHttpError(404, "Book not found."));
+        }
+        // only author of the book can delete the book
+        if (book.author?.toString() !== req.userId) {
+            return next(
+                createHttpError(403, "You are not authorized to delete this book."),
+            );
+        }
+        const coverFileSplits = book.coverImage?.split("/") ?? [];
+        const coverImagePublicId = coverFileSplits.at(-2) + "/" + coverFileSplits.at(-1)?.split(".").at(0);
+        await cloudinary.uploader.destroy(coverImagePublicId);
+
+        const bookFileSplits = book.file?.split("/");
+        const bookFilePublicId = bookFileSplits?.at(-2) + "/" + bookFileSplits?.at(-1);
+        await cloudinary.uploader.destroy(bookFilePublicId, { resource_type: "raw" });
+
+        await BookModel.findByIdAndDelete(bookId);
+        // return res.status(200).json({ message: "Book deleted successfully.", id: bookId });
+        return res.sendStatus(204);
+    } catch (error) {
+        console.error(error);
+        return next(createHttpError(500, "Error while deleting book."));
+    }
+
+}
+
 
