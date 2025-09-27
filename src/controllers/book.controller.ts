@@ -255,6 +255,4 @@ export const deleteById = async (
         return next(createHttpError(500, "Error while deleting book."));
     }
 
-}
-
-
+};
