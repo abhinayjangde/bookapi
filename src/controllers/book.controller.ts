@@ -207,7 +207,7 @@ export const getBookById = async (
         return next(createHttpError(400, "Book ID is required."));
     }
     try {
-        const book = await BookModel.findById(bookId);
+        const book = await BookModel.findById(bookId).populate("author", "name");
         if (!book) {
             return next(createHttpError(404, "Book not found."));
         }
