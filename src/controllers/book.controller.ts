@@ -54,17 +54,21 @@ export const createBook = async (
         });
 
         // create a new book in the database
-        const { title, genre } = req.body;
+        const { title, genre, description } = req.body;
         if (!title) {
             return next(createHttpError(400, "Title is required."));
         }
         if (!genre) {
             return next(createHttpError(400, "Genre is required."));
         }
+        if (!description) {
+            return next(createHttpError(400, "Description is required."));
+        }
 
         const newBook = await BookModel.create({
             title,
             genre,
+            description,
             author: req.userId,
             coverImage: uploadCoverResult.secure_url,
             file: uploadBookResult.secure_url,
@@ -89,13 +93,16 @@ export const updateBook = async (
     next: NextFunction,
 ) => {
     const { bookId } = req.params;
-    const { title, genre } = req.body;
+    const { title, genre, description } = req.body;
 
     if (!title) {
         return next(createHttpError(400, "Title is required."));
     }
     if (!genre) {
         return next(createHttpError(400, "Genre is required."));
+    }
+    if (!description) {
+        return next(createHttpError(400, "Description is required."));
     }
     if (!bookId) {
         return next(createHttpError(400, "Book ID is required."));
@@ -161,6 +168,7 @@ export const updateBook = async (
 
         existingBook.title = title;
         existingBook.genre = genre;
+        existingBook.description = description;
         await existingBook.save();
 
         return res
@@ -179,7 +187,7 @@ export const getAllBooks = async (
 ) => {
     try {
         // normally we would add pagination here
-        const books = await BookModel.find();
+        const books = await BookModel.find().populate("author", "name");
         return res
             .status(200)
             .json({ message: "Books fetched successfully", books });
