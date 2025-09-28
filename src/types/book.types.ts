@@ -9,3 +9,4 @@ export interface Book {
     coverImage: string;
     file: string; // book pdf url from cloudinary
 }
+

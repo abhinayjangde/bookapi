@@ -1,10 +1,10 @@
 import type { NextFunction, Response, Request } from "express";
+import BookModel from "../models/book.model.js";
+import { AuthRequest } from "../middlewares/auth.middleware.js";
 import cloudinary from "../config/cloudinary.js";
 import path from "node:path";
-import createHttpError from "http-errors";
-import BookModel from "../models/book.model.js";
 import fs from "node:fs";
-import { AuthRequest } from "../middlewares/auth.middleware.js";
+import createHttpError from "http-errors";
 
 export const createBook = async (
     req: AuthRequest,
